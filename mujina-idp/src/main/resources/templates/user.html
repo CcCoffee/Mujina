@@ -5,22 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/main.css"/>
 </head>
+<body>
 <section class="user-container">
     <section class="attributes">
         <h1>Mujina Identity Provider</h1>
-        <a class="button" th:href="@{/logout}">Logout</a>
-        <p>The following information is stored in your authentication</p>
-        <ul>
-            <li>Name</li>
-            <li th:text="${user.principal}"></li>
-        </ul>
-        <ul th:each="authority : ${user.authorities}">
-            <li>Authority</li>
-            <li th:text="${authority.authority}"></li>
-        </ul>
+        
+        <!-- 用户信息 -->
+        <div class="user-info">
+            <p>欢迎，<strong th:text="${user.principal}"></strong>！</p>
+            <p>以下是您的身份验证信息：</p>
+            <ul>
+                <li>用户名: <span th:text="${user.principal}"></span></li>
+            </ul>
+            <ul th:each="authority : ${user.authorities}">
+                <li>权限: <span th:text="${authority.authority}"></span></li>
+            </ul>
+        </div>
+        
+        <!-- IdP发起SSO功能 -->
+        <div class="sso-section">
+            <h3>访问服务提供者 (SP)</h3>
+            <p>点击下面的按钮直接访问服务提供者，无需重新登录：</p>
+            
+            <form action="/initiate-sso" method="post" class="sso-form">
+                <div class="form-group">
+                    <label for="relayState">目标页面 (可选):</label>
+                    <input type="text" id="relayState" name="relayState" 
+                           placeholder="例如: /protected" 
+                           title="指定登录后要访问的页面">
+                </div>
+                
+                <button type="submit" class="button sso-button">
+                    🚀 访问 Mujina SP
+                </button>
+                
+                <p class="sso-info">
+                    <small>将会自动跳转到 SP (http://localhost:9090) 并完成单点登录</small>
+                </p>
+            </form>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="actions">
+            <a class="button" th:href="@{/logout}">退出登录</a>
+        </div>
+        
         <section class="powered-by">
             <a href="https://openconext.org/" target="_blank" rel="noreferrer noopener">Copyright © 2018 OpenConext</a>
         </section>
     </section>
 </section>
+
+<!-- 添加一些基本样式 -->
+<style>
+.user-info {
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.sso-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    background-color: #f0f8ff;
+}
+
+.sso-section h3 {
+    color: #007bff;
+    margin-top: 0;
+}
+
+.sso-form {
+    margin-top: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.sso-button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.sso-button:hover {
+    background-color: #218838;
+}
+
+.sso-info {
+    margin-top: 10px;
+    color: #6c757d;
+}
+
+.actions {
+    margin-top: 20px;
+}
+</style>
+</body>
 </html>
