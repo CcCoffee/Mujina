@@ -95,6 +95,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: background 0.3s ease;
+            width: auto !important;
         }
         
         .button:hover {
@@ -133,7 +134,7 @@
     </div>
     
     <!-- SP选择表单 -->
-    <form id="ssoForm" action="/initiate-sso-v2" method="post">
+    <form id="ssoForm" action="/initiate-sso" method="post">
         <!-- SP卡片网格 -->
         <div class="sp-grid">
             <div th:each="sp : ${spProviders}" 
@@ -189,7 +190,7 @@
     <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 4px; border-left: 4px solid #ffc107;">
         <h4>💡 使用说明</h4>
         <ul>
-            <li><strong>方案2特性</strong>：支持多个SP的配置化管理</li>
+            <li><strong>多SP管理</strong>：支持多个SP的配置化管理</li>
             <li><strong>SP选择</strong>：点击SP卡片进行选择，支持动态配置</li>
             <li><strong>RelayState</strong>：可选参数，指定登录后的目标页面</li>
             <li><strong>配置管理</strong>：SP信息通过application.yml配置文件管理</li>

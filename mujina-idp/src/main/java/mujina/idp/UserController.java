@@ -93,40 +93,17 @@ public class UserController {
         return "login";
     }
 
+
+
     /**
-     * IdP发起的SSO - 方案1：最小化改动实现（保持向后兼容）
-     * 硬编码SP信息，适合单一SP环境的快速实现
+     * IdP发起的SSO - 配置化多SP方案
+     * 支持动态SP选择，通过spId参数从SpRegistry中查找对应的SP信息
      */
     @PostMapping("/initiate-sso")
     public void initiateSso(Authentication authentication, 
                            HttpServletResponse response,
+                           @RequestParam("spId") String spId,
                            @RequestParam(value = "relayState", required = false) String relayState) throws Exception {
-        
-        if (authentication == null || !authentication.isAuthenticated()) {
-            response.sendRedirect("/login");
-            return;
-        }
-        
-        // 硬编码SP信息 - 方案1的特点（保持向后兼容）
-        String spEntityId = "http://mock-sp"; // 默认SP实体ID
-        String acsUrl = "http://localhost:9090/saml/SSO"; // 默认SP的ACS URL
-        
-        // 构建SAMLPrincipal用于IdP发起的SSO
-        SAMLPrincipal principal = createSAMLPrincipal(authentication, spEntityId, acsUrl, relayState);
-        
-        // 发送SAML响应到SP
-        samlMessageHandler.sendAuthnResponse(principal, AuthnContext.PASSWORD_AUTHN_CTX, response);
-    }
-
-    /**
-     * IdP发起的SSO - 方案2：配置化多SP方案
-     * 支持动态SP选择和配置管理
-     */
-    @PostMapping("/initiate-sso-v2")
-    public void initiateSsoV2(Authentication authentication, 
-                             HttpServletResponse response,
-                             @RequestParam("spId") String spId,
-                             @RequestParam(value = "relayState", required = false) String relayState) throws Exception {
         
         if (authentication == null || !authentication.isAuthenticated()) {
             response.sendRedirect("/login");

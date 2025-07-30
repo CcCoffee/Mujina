@@ -22,64 +22,36 @@
             </ul>
         </div>
         
-        <!-- IdP发起SSO功能 -->
+        <!-- IdP发起SSO功能 - 方案2：多SP选择 -->
         <div class="sso-section">
-            <h3>访问服务提供者 (SP)</h3>
+            <h3>⚙️ 选择服务提供者 (SP)</h3>
+            <p>从配置的多个SP中选择目标服务提供者：</p>
             
-            <!-- 方案1：快速访问默认SP -->
-            <div class="sso-option">
-                <h4>🚀 方案1：快速访问 (默认SP)</h4>
-                <p>点击下面的按钮直接访问默认的Mujina SP：</p>
-                
-                <form action="/initiate-sso" method="post" class="sso-form">
-                    <div class="form-group">
-                        <label for="relayState">目标页面 (可选):</label>
-                        <input type="text" id="relayState" name="relayState" 
-                               placeholder="例如: /protected" 
-                               title="指定登录后要访问的页面">
-                    </div>
-                    
-                    <button type="submit" class="button sso-button">
-                        🚀 访问 Mujina SP
-                    </button>
-                    
-                    <p class="sso-info">
-                        <small>将会自动跳转到 SP (http://localhost:9090) 并完成单点登录</small>
-                    </p>
-                </form>
+            <!-- SP快速选择列表 -->
+            <div class="sp-quick-list" th:if="${spProviders != null and !spProviders.isEmpty()}">
+                <div th:each="sp : ${spProviders}" class="sp-quick-item">
+                    <form action="/initiate-sso" method="post" class="sp-form">
+                        <input type="hidden" name="spId" th:value="${sp.id}"/>
+                        <button type="submit" class="button sp-button" th:text="'🔗 ' + ${sp.name}"></button>
+                        <span class="sp-description" th:text="${sp.description}"></span>
+                    </form>
+                </div>
             </div>
             
-            <!-- 方案2：多SP选择 -->
-            <div class="sso-option" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                <h4>⚙️ 方案2：选择服务提供者</h4>
-                <p>从配置的多个SP中选择目标服务提供者：</p>
-                
-                <!-- SP快速选择列表 -->
-                <div class="sp-quick-list" th:if="${spProviders != null and !spProviders.isEmpty()}">
-                    <div th:each="sp : ${spProviders}" class="sp-quick-item">
-                        <form action="/initiate-sso-v2" method="post" style="display: inline;">
-                            <input type="hidden" name="spId" th:value="${sp.id}"/>
-                            <button type="submit" class="button sp-button" th:text="'🔗 ' + ${sp.name}"></button>
-                            <small th:text="${sp.description}" style="margin-left: 10px; color: #666;"></small>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- SP选择页面链接 -->
-                <div style="margin-top: 15px;">
-                    <a href="/sp-selection" class="button secondary-button">
-                        📋 高级SP选择 (支持RelayState)
-                    </a>
-                    <p class="sso-info">
-                        <small>支持多SP配置管理、RelayState参数和详细SP信息</small>
-                    </p>
-                </div>
+            <!-- 高级SP选择页面链接 -->
+            <div class="advanced-selection">
+                <a href="/sp-selection" class="button secondary-button">
+                    📋 高级SP选择 (支持RelayState)
+                </a>
+                <p class="sso-info">
+                    <small>支持多SP配置管理、RelayState参数和详细SP信息</small>
+                </p>
             </div>
         </div>
         
         <!-- 操作按钮 -->
         <div class="actions">
-            <a class="button" th:href="@{/logout}">退出登录</a>
+            <a class="logout-button" th:href="@{/logout}">🚪 退出登录</a>
         </div>
         
         <section class="powered-by">
@@ -91,23 +63,65 @@
 <!-- 添加一些基本样式 -->
 <style>
 .user-info {
-    margin-bottom: 30px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
+    margin-bottom: 35px;
+    padding: 25px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border-radius: 16px;
+    border: 1px solid #e1f5fe;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    text-align: center;
+}
+
+.user-info h4 {
+    color: #1976d2;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.user-info p {
+    margin: 8px 0;
+    color: #424242;
+    font-size: 15px;
 }
 
 .sso-section {
-    margin-bottom: 30px;
-    padding: 20px;
-    border: 2px solid #007bff;
-    border-radius: 8px;
-    background-color: #f0f8ff;
+    margin-bottom: 35px;
+    padding: 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.sso-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff 0%, #0056b3 50%, #28a745 100%);
 }
 
 .sso-section h3 {
-    color: #007bff;
+    color: #495057;
     margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+}
+
+.sso-section > p {
+    text-align: center;
+    color: #6c757d;
+    font-size: 16px;
+    margin-bottom: 25px;
+    line-height: 1.5;
 }
 
 .sso-form {
@@ -131,65 +145,147 @@
     border-radius: 4px;
 }
 
-/* 方案选项样式 */
-.sso-option {
-    margin-bottom: 20px;
-}
-
-.sso-option h4 {
-    color: #495057;
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
 /* SP快速选择列表 */
 .sp-quick-list {
-    margin: 15px 0;
+    margin: 25px 0;
+    max-width: 100%;
 }
 
 .sp-quick-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    border-left: 3px solid #28a745;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.sp-quick-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-left-color: #20c997;
+}
+
+.sp-form {
+    display: block;
+    width: 100%;
 }
 
 .sp-button {
-    background: #28a745 !important;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
     border: none;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    margin-bottom: 10px;
 }
 
 .sp-button:hover {
-    background: #218838 !important;
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+}
+
+.sp-description {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+    font-style: italic;
+    margin: 0;
+    padding: 0 10px;
+}
+
+/* 高级选择区域 */
+.advanced-selection {
+    margin-top: 30px;
+    padding: 25px 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.advanced-selection:hover {
+    border-color: #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
 .secondary-button {
-    background: #6c757d !important;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
     color: white;
     text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+    padding: 16px 32px;
+    border-radius: 8px;
     display: inline-block;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    width: auto !important;
+    min-width: 320px;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+    white-space: nowrap;
+    text-align: center;
 }
 
 .secondary-button:hover {
-    background: #545b62 !important;
+    background: linear-gradient(135deg, #545b62 0%, #343a40 100%) !important;
     text-decoration: none;
     color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
 }
 
 .sso-info {
-    margin-top: 10px;
+    margin-top: 12px;
     font-style: italic;
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.4;
 }
     padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
+     border: 1px solid #ddd;
+     border-radius: 4px;
+     box-sizing: border-box;
+}
+
+/* 操作按钮区域 */
+.actions {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #dee2e6;
+}
+
+.logout-button {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.logout-button:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    text-decoration: none;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
 }
 
 .sso-button {
