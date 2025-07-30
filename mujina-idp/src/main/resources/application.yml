@@ -50,6 +50,30 @@ idp:
     [urn:mace:terena.org:attribute-def:schacHomeOrganization]: "example.com"
     [urn:mace:dir:attribute-def:eduPersonPrincipalName]: "j.doe@example.com"
     [urn:oasis:names:tc:SAML:attribute:subject-id]: "j.doe@example.com"
+  # SP注册表配置 - 方案2：配置化多SP方案
+  sp-registry:
+    providers:
+      - id: "mujina-sp"
+        name: "Mujina Service Provider"
+        description: "默认的Mujina测试SP"
+        entity-id: "http://mock-sp"
+        acs-url: "http://localhost:9090/saml/SSO"
+        logo-url: "/images/mujina-sp-logo.png"
+        enabled: true
+      - id: "demo-sp"
+        name: "Demo Service Provider"
+        description: "演示用的第二个SP"
+        entity-id: "http://demo-sp"
+        acs-url: "http://localhost:9091/saml/SSO"
+        logo-url: "/images/demo-sp-logo.png"
+        enabled: true
+      - id: "test-sp"
+        name: "Test Service Provider"
+        description: "测试环境SP"
+        entity-id: "http://test-sp"
+        acs-url: "http://localhost:9092/saml/SSO"
+        logo-url: "/images/test-sp-logo.png"
+        enabled: false
 
 acr:
   values:
@@ -91,3 +115,6 @@ management:
   info:
     git:
       mode: full
+
+# SP注册表配置 - 方案2：配置化多SP方案
+# 注意：此配置已合并到上面的idp配置中，避免重复键

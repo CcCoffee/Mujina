@@ -33,6 +33,7 @@ public class UserController {
     private final AuthnContextClassRefs authnContextClassRefs;
     private final SAMLMessageHandler samlMessageHandler;
     private final IdpConfiguration idpConfiguration;
+    private final SpRegistry spRegistry;
 
     @Autowired
     @SuppressWarnings("unchecked")
@@ -40,6 +41,7 @@ public class UserController {
                           AuthnContextClassRefs authnContextClassRefs,
                           SAMLMessageHandler samlMessageHandler,
                           IdpConfiguration idpConfiguration,
+                          SpRegistry spRegistry,
                           @Value("${idp.saml_attributes_config_file}") String samlAttributesConfigFile) throws IOException {
 
         DefaultResourceLoader loader = new DefaultResourceLoader();
@@ -50,6 +52,7 @@ public class UserController {
         this.authnContextClassRefs = authnContextClassRefs;
         this.samlMessageHandler = samlMessageHandler;
         this.idpConfiguration = idpConfiguration;
+        this.spRegistry = spRegistry;
     }
 
     @GetMapping("/")
@@ -60,7 +63,27 @@ public class UserController {
     @GetMapping("/user.html")
     public String user(Authentication authentication, ModelMap modelMap) {
         modelMap.addAttribute("user", authentication);
+        // 方案2：添加SP列表供用户选择
+        modelMap.addAttribute("spProviders", spRegistry.getProviders().stream()
+                .filter(SpRegistry.ServiceProvider::isEnabled)
+                .collect(Collectors.toList()));
         return "user";
+    }
+
+    /**
+     * SP选择页面 - 方案2新增
+     */
+    @GetMapping("/sp-selection")
+    public String spSelection(Authentication authentication, ModelMap modelMap) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        
+        modelMap.addAttribute("user", authentication);
+        modelMap.addAttribute("spProviders", spRegistry.getProviders().stream()
+                .filter(SpRegistry.ServiceProvider::isEnabled)
+                .collect(Collectors.toList()));
+        return "sp-selection";
     }
 
     @GetMapping("/login")
@@ -71,7 +94,7 @@ public class UserController {
     }
 
     /**
-     * IdP发起的SSO - 方案1：最小化改动实现
+     * IdP发起的SSO - 方案1：最小化改动实现（保持向后兼容）
      * 硬编码SP信息，适合单一SP环境的快速实现
      */
     @PostMapping("/initiate-sso")
@@ -84,9 +107,42 @@ public class UserController {
             return;
         }
         
-        // 硬编码SP信息 - 方案1的特点
+        // 硬编码SP信息 - 方案1的特点（保持向后兼容）
         String spEntityId = "http://mock-sp"; // 默认SP实体ID
         String acsUrl = "http://localhost:9090/saml/SSO"; // 默认SP的ACS URL
+        
+        // 构建SAMLPrincipal用于IdP发起的SSO
+        SAMLPrincipal principal = createSAMLPrincipal(authentication, spEntityId, acsUrl, relayState);
+        
+        // 发送SAML响应到SP
+        samlMessageHandler.sendAuthnResponse(principal, AuthnContext.PASSWORD_AUTHN_CTX, response);
+    }
+
+    /**
+     * IdP发起的SSO - 方案2：配置化多SP方案
+     * 支持动态SP选择和配置管理
+     */
+    @PostMapping("/initiate-sso-v2")
+    public void initiateSsoV2(Authentication authentication, 
+                             HttpServletResponse response,
+                             @RequestParam("spId") String spId,
+                             @RequestParam(value = "relayState", required = false) String relayState) throws Exception {
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.sendRedirect("/login");
+            return;
+        }
+        
+        // 从SP注册表中查找目标SP
+        SpRegistry.ServiceProvider targetSp = spRegistry.findById(spId);
+        if (targetSp == null || !targetSp.isEnabled()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid or disabled Service Provider: " + spId);
+            return;
+        }
+        
+        // 使用配置的SP信息
+        String spEntityId = targetSp.getEntityId();
+        String acsUrl = targetSp.getAcsUrl();
         
         // 构建SAMLPrincipal用于IdP发起的SSO
         SAMLPrincipal principal = createSAMLPrincipal(authentication, spEntityId, acsUrl, relayState);

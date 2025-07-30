@@ -25,24 +25,56 @@
         <!-- IdP发起SSO功能 -->
         <div class="sso-section">
             <h3>访问服务提供者 (SP)</h3>
-            <p>点击下面的按钮直接访问服务提供者，无需重新登录：</p>
             
-            <form action="/initiate-sso" method="post" class="sso-form">
-                <div class="form-group">
-                    <label for="relayState">目标页面 (可选):</label>
-                    <input type="text" id="relayState" name="relayState" 
-                           placeholder="例如: /protected" 
-                           title="指定登录后要访问的页面">
+            <!-- 方案1：快速访问默认SP -->
+            <div class="sso-option">
+                <h4>🚀 方案1：快速访问 (默认SP)</h4>
+                <p>点击下面的按钮直接访问默认的Mujina SP：</p>
+                
+                <form action="/initiate-sso" method="post" class="sso-form">
+                    <div class="form-group">
+                        <label for="relayState">目标页面 (可选):</label>
+                        <input type="text" id="relayState" name="relayState" 
+                               placeholder="例如: /protected" 
+                               title="指定登录后要访问的页面">
+                    </div>
+                    
+                    <button type="submit" class="button sso-button">
+                        🚀 访问 Mujina SP
+                    </button>
+                    
+                    <p class="sso-info">
+                        <small>将会自动跳转到 SP (http://localhost:9090) 并完成单点登录</small>
+                    </p>
+                </form>
+            </div>
+            
+            <!-- 方案2：多SP选择 -->
+            <div class="sso-option" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <h4>⚙️ 方案2：选择服务提供者</h4>
+                <p>从配置的多个SP中选择目标服务提供者：</p>
+                
+                <!-- SP快速选择列表 -->
+                <div class="sp-quick-list" th:if="${spProviders != null and !spProviders.isEmpty()}">
+                    <div th:each="sp : ${spProviders}" class="sp-quick-item">
+                        <form action="/initiate-sso-v2" method="post" style="display: inline;">
+                            <input type="hidden" name="spId" th:value="${sp.id}"/>
+                            <button type="submit" class="button sp-button" th:text="'🔗 ' + ${sp.name}"></button>
+                            <small th:text="${sp.description}" style="margin-left: 10px; color: #666;"></small>
+                        </form>
+                    </div>
                 </div>
                 
-                <button type="submit" class="button sso-button">
-                    🚀 访问 Mujina SP
-                </button>
-                
-                <p class="sso-info">
-                    <small>将会自动跳转到 SP (http://localhost:9090) 并完成单点登录</small>
-                </p>
-            </form>
+                <!-- SP选择页面链接 -->
+                <div style="margin-top: 15px;">
+                    <a href="/sp-selection" class="button secondary-button">
+                        📋 高级SP选择 (支持RelayState)
+                    </a>
+                    <p class="sso-info">
+                        <small>支持多SP配置管理、RelayState参数和详细SP信息</small>
+                    </p>
+                </div>
+            </div>
         </div>
         
         <!-- 操作按钮 -->
@@ -94,6 +126,66 @@
 
 .form-group input {
     width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* 方案选项样式 */
+.sso-option {
+    margin-bottom: 20px;
+}
+
+.sso-option h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+/* SP快速选择列表 */
+.sp-quick-list {
+    margin: 15px 0;
+}
+
+.sp-quick-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #28a745;
+}
+
+.sp-button {
+    background: #28a745 !important;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.sp-button:hover {
+    background: #218838 !important;
+}
+
+.secondary-button {
+    background: #6c757d !important;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: inline-block;
+    transition: background 0.3s ease;
+}
+
+.secondary-button:hover {
+    background: #545b62 !important;
+    text-decoration: none;
+    color: white;
+}
+
+.sso-info {
+    margin-top: 10px;
+    font-style: italic;
+}
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
