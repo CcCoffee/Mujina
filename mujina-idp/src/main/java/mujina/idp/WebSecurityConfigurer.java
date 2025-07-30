@@ -144,6 +144,7 @@ public class WebSecurityConfigurer implements WebMvcConfigurer {
                     .and()
                     .formLogin()
                     .loginPage("/login")
+                    .defaultSuccessUrl("/user.html", true)  // 添加这行
                     .permitAll()
                     .failureUrl("/login?error=true")
                     .permitAll()
